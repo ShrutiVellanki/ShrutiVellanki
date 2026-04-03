@@ -1,7 +1,5 @@
 # Shruti Vellanki
 
-🔗 [www.shrutivellanki.com](https://www.shrutivellanki.com)
-
 Hi, my name is Shruti Vellanki.
 
 I'm currently building UI features for Norton™ 360 and Avast at Gen.
@@ -21,6 +19,7 @@ and AI Recipe Parser:
 
 ## Links
 
+- [Portfolio](https://www.shrutivellanki.com)
 - [Linkedin](https://www.linkedin.com/in/shruti-vellanki/)
 - [Email](mailto:shvellanki@gmail.com)
 - [Github](https://github.com/ShrutiVellanki)
