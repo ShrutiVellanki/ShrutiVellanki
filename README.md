@@ -10,7 +10,7 @@ My past work includes frontend, developer tooling, and design systems for Intera
 
 Twin projects focused on data visualization, reusable components and accessibility for the personal finance space.
 
-- 🎨 [lavender-storybook](https://github.com/ShrutiVellanki/lavender-storybook) - A themed, documented React design system supporting the Lavender Finance dashboard.
+- 🎨 [lavender-storybook](https://lavender-storybook.vercel.app/) - A themed, documented React design system supporting the Lavender Finance dashboard.
 - 💰 [lavender-finance](https://github.com/ShrutiVellanki/lavender-finance) - A personal finance dashboard exploring data visualization, reusable UI patterns, and React architecture.
 
 and AI Recipe Parser:
