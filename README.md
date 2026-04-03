@@ -1,19 +1,24 @@
-# Hi, I'm Shruti Vellanki
+# Shruti Vellanki
 
-Software Engineer with 5+ years building frontend applications and design systems to serve over 50M+ users. Experienced in React, TypeScript, JavaScript, and Svelte, collaborating across product, design and engineering to deliver scalable solutions that serve both user needs and business goals.
+Hi, my name is Shruti Vellanki.
 
-### What I'm working on
+I'm currently building UI features for Norton™ 360 and Avast at Gen.
 
-- **[Lavender Finance](https://lavender-finance.vercel.app)** — Personal finance dashboard with budgeting, transaction management, and interactive charts
-- **[Lavender Storybook](https://lavender-storybook.vercel.app)** — Themed copy-paste component library with 20+ accessible, theme-aware React components
-- **[Portfolio](https://lavender-portfolio.vercel.app)** — My personal site, built with the Lavender design system
+My past work includes frontend, developer tooling, and design systems for Interac's national ID verification platform (14M+ Canadians).
 
-### Talks
+## Projects
 
-- **Addressing The Current State of Cognitive Accessibility** — Toronto JavaScript Meetup, April 2024
-- **How to Add Accessibility Checks to Your Workflow** — Toronto JavaScript Meetup, Sept 2023
+Twin projects focused on data visualization, reusable components and accessibility for the personal finance space.
 
-### Connect
+- 🎨 [lavender-storybook](https://github.com/ShrutiVellanki/lavender-storybook) - A themed, documented React design system supporting the Lavender Finance dashboard.
+- 🔒 [lavender-finance](https://github.com/ShrutiVellanki/lavender-finance) - A personal finance dashboard exploring data visualization, reusable UI patterns, and React architecture.
 
-- [LinkedIn](https://www.linkedin.com/in/shruti-vellanki/)
+and AI Recipe Parser:
+
+- 🎯 [recipe-extraction-demo](https://github.com/ShrutiVellanki/recipe-extraction-demo) - A Python-based solution for extracting recipe data from PDFs using GPT-5, LangChain, and PyMuPDF.
+
+## Links
+
+- [Linkedin](https://www.linkedin.com/in/shruti-vellanki/)
 - [Email](mailto:shvellanki@gmail.com)
+- [Github](https://github.com/ShrutiVellanki)
