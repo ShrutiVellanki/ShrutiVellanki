@@ -8,7 +8,7 @@ import { PagePreview } from "./components/PagePreview"
 import { ContextMenu } from "./components/ContextMenu"
 import { Toast } from "./components/Toast"
 
-function KeyboardShortcuts({ moveStep }: { moveStep: number }) {
+function KeyboardShortcuts() {
   const K = ({ children }: { children: ReactNode }) => (
     <kbd className="font-mono px-1 py-px rounded bg-surface-sunken border border-border text-[9px]">{children}</kbd>
   )
@@ -20,11 +20,7 @@ function KeyboardShortcuts({ moveStep }: { moveStep: number }) {
       <span className="shrink-0"><K>[</K> <K>]</K> doc</span>
       <Sep />
       <span className="shrink-0"><K>S</K> split here</span>
-      <span className="shrink-0">
-        <K>⇧</K><K>←</K> <K>⇧</K><K>→</K> move boundary
-        {moveStep > 1 && <span className="ml-1 text-accent font-bold">×{moveStep}</span>}
-      </span>
-      <span className="shrink-0"><K>1</K>–<K>9</K> set step{moveStep > 1 && <span className="ml-0.5 text-accent font-bold">({moveStep})</span>}</span>
+      <span className="shrink-0"><K>⇧</K><K>←</K> <K>⇧</K><K>→</K> nudge boundary</span>
       <Sep />
       <span className="shrink-0"><K>⇧</K><K>⌫</K> merge ←</span>
       <span className="shrink-0"><K>⇧</K><K>⌦</K> merge →</span>
@@ -75,7 +71,6 @@ export default function App() {
   const bundle = useMemo(() => generateMockBundle(), [])
   const [state, dispatch] = useAppStore(bundle)
   const [previewWidth, setPreviewWidth] = useState(480)
-  const [moveStep, setMoveStep] = useState(1)
 
   const handlePreviewResize = useCallback((delta: number) => {
     setPreviewWidth((w) => Math.min(1200, Math.max(320, w + delta)))
@@ -90,11 +85,6 @@ export default function App() {
       if (e.key === "Escape") {
         dispatch({ type: "CLEAR_SELECTION" })
         dispatch({ type: "CLOSE_CONTEXT_MENU" })
-      }
-
-      // Number keys 1-9: set move step
-      if (e.key >= "1" && e.key <= "9" && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
-        setMoveStep(parseInt(e.key, 10))
       }
 
       // Doc navigation: [ ] or Alt+Arrow
@@ -145,19 +135,19 @@ export default function App() {
         }
       }
 
-      // Move boundary: Shift+Arrow — move pages by moveStep across the upper boundary
+      // Move boundary: Shift+Arrow — nudge boundary ±1 page
       if (e.key === "ArrowLeft" && e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
         const docIdx = documents.findIndex((d) => d.id === state.selectedDocId)
         if (docIdx > 0) {
           e.preventDefault()
-          dispatch({ type: "MOVE_BOUNDARY", splitAfterDocId: documents[docIdx - 1].id, delta: -moveStep })
+          dispatch({ type: "MOVE_BOUNDARY", splitAfterDocId: documents[docIdx - 1].id, delta: -1 })
         }
       }
       if (e.key === "ArrowRight" && e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
         const docIdx = documents.findIndex((d) => d.id === state.selectedDocId)
         if (docIdx > 0) {
           e.preventDefault()
-          dispatch({ type: "MOVE_BOUNDARY", splitAfterDocId: documents[docIdx - 1].id, delta: moveStep })
+          dispatch({ type: "MOVE_BOUNDARY", splitAfterDocId: documents[docIdx - 1].id, delta: 1 })
         }
       }
 
@@ -169,7 +159,7 @@ export default function App() {
     }
     window.addEventListener("keydown", handleKey)
     return () => window.removeEventListener("keydown", handleKey)
-  }, [dispatch, state.bundle, state.selectedDocId, state.selectedPageId, moveStep])
+  }, [dispatch, state.bundle, state.selectedDocId, state.selectedPageId])
 
   return (
     <StoreContext.Provider value={{ state, dispatch }}>
@@ -195,7 +185,7 @@ export default function App() {
           </aside>
         </div>
 
-        <KeyboardShortcuts moveStep={moveStep} />
+        <KeyboardShortcuts />
         <ContextMenu />
         <Toast />
       </div>

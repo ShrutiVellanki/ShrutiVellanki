@@ -138,6 +138,29 @@ function PageThumb({
   )
 }
 
+function BoundaryBtn({ color, onClick, title, children }: {
+  color: string
+  onClick: () => void
+  title: string
+  children: React.ReactNode
+}) {
+  const [hover, setHover] = useState(false)
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); onClick() }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className="w-5 h-5 flex items-center justify-center rounded transition-colors text-ink-muted/50"
+      style={{
+        color: hover ? color : undefined,
+      }}
+      title={title}
+    >
+      {children}
+    </button>
+  )
+}
+
 function SplitBoundary({ prevDoc, nextDoc }: {
   prevDoc: Document
   nextDoc: Document
@@ -148,15 +171,25 @@ function SplitBoundary({ prevDoc, nextDoc }: {
   const dragAccum = useRef(0)
   const [dragging, setDragging] = useState(false)
   const [active, setActive] = useState(false)
-  const [moveCount, setMoveCount] = useState(1)
-
   const prevMeta = CLASSIFICATION_META[prevDoc.classification]
   const nextMeta = CLASSIFICATION_META[nextDoc.classification]
   const prevLabel = prevDoc.fileName.replace(/\.pdf$/i, "")
   const nextLabel = nextDoc.fileName.replace(/\.pdf$/i, "")
 
+  const boundaryPage = nextDoc.pages[0]?.originalPageNumber ?? 0
+  const [pageInput, setPageInput] = useState(String(boundaryPage))
+
+  useEffect(() => {
+    setPageInput(String(boundaryPage))
+  }, [boundaryPage])
+
   const moveBoundary = useCallback(
     (delta: number) => dispatch({ type: "MOVE_BOUNDARY", splitAfterDocId: prevDoc.id, delta }),
+    [dispatch, prevDoc.id],
+  )
+
+  const moveBoundaryToPage = useCallback(
+    (targetPage: number) => dispatch({ type: "MOVE_BOUNDARY_TO_PAGE", splitAfterDocId: prevDoc.id, targetOriginalPage: targetPage }),
     [dispatch, prevDoc.id],
   )
 
@@ -176,22 +209,18 @@ function SplitBoundary({ prevDoc, nextDoc }: {
       if (key === "ArrowLeft" || key === "ArrowRight") {
         e.preventDefault()
         e.stopPropagation()
-        const dir = key === "ArrowLeft" ? -1 : 1
-        const count = e.shiftKey ? moveCount : 1
-        moveBoundary(dir * count)
+        moveBoundary(key === "ArrowLeft" ? -1 : 1)
       } else if (key === "Backspace") {
         e.preventDefault()
         mergeLeft()
       } else if (key === "Delete") {
         e.preventDefault()
         mergeRight()
-      } else if (key >= "1" && key <= "9") {
-        setMoveCount(parseInt(key, 10))
       } else if (key === "Escape") {
         rootRef.current?.blur()
       }
     },
-    [moveBoundary, mergeLeft, mergeRight, moveCount],
+    [moveBoundary, mergeLeft, mergeRight],
   )
 
   const totalDragged = useRef(0)
@@ -221,9 +250,6 @@ function SplitBoundary({ prevDoc, nextDoc }: {
       function onUp() {
         dragStartX.current = null
         setDragging(false)
-        if (totalDragged.current > 0) {
-          setMoveCount(Math.min(99, totalDragged.current))
-        }
         window.removeEventListener("mousemove", onMove)
         window.removeEventListener("mouseup", onUp)
       }
@@ -245,105 +271,73 @@ function SplitBoundary({ prevDoc, nextDoc }: {
     [dispatch, prevDoc.id, nextDoc.id],
   )
 
-  const showControls = active || dragging
+  const hovered = active || dragging
 
   return (
     <div
       ref={rootRef}
       tabIndex={0}
-      className={`flex flex-col items-center justify-center self-stretch select-none outline-none transition-all duration-150 ${
-        showControls ? "bg-accent/5 rounded-lg" : ""
-      } focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface`}
-      style={{ width: showControls ? 88 : 28 }}
+      className="flex flex-col items-center self-stretch select-none outline-none cursor-ew-resize focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+      style={{ width: 32 }}
       onContextMenu={handleContextMenu}
       onMouseEnter={() => setActive(true)}
-      onMouseLeave={() => { setActive(false); setMoveCount(1) }}
+      onMouseLeave={() => setActive(false)}
       onFocus={() => setActive(true)}
-      onBlur={() => { setActive(false); setMoveCount(1) }}
+      onBlur={() => setActive(false)}
       onKeyDown={handleKeyDown}
+      onMouseDown={handleDragStart}
     >
-      <div className={`w-[2px] flex-1 transition-colors ${showControls ? "bg-accent" : "bg-accent/40"}`} />
-
-      {showControls ? (
-        <div className="flex flex-col items-center gap-1.5 py-2 w-full px-1">
-          {/* Doc labels */}
-          <div className="flex items-center gap-1 w-full justify-center">
-            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: prevMeta.color }} />
-            <span className="text-[8px] text-ink-muted truncate max-w-[30px]">{prevLabel}</span>
-            <span className="text-[8px] text-ink-muted/40">|</span>
-            <span className="text-[8px] text-ink-muted truncate max-w-[30px]">{nextLabel}</span>
-            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: nextMeta.color }} />
-          </div>
-
-          {/* Move pages — also draggable */}
-          <div className="flex flex-col items-center gap-0.5">
-            <span className="text-[7px] uppercase tracking-wider text-ink-muted/60 font-semibold">Move</span>
-            <div
-              className={`flex items-center gap-px cursor-ew-resize rounded px-0.5 ${dragging ? "bg-accent/12" : ""}`}
-              onMouseDown={handleDragStart}
-              title="Click arrows or drag to move boundary"
-            >
-              <button
-                onClick={(e) => { e.stopPropagation(); moveBoundary(-moveCount) }}
-                onMouseDown={(e) => e.stopPropagation()}
-                className="w-5 h-5 flex items-center justify-center rounded text-ink-muted hover:text-accent hover:bg-accent/10 transition-colors"
-                title={`Move ${moveCount} page${moveCount > 1 ? "s" : ""} ← (←)`}
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
-              <input
-                type="number"
-                min={1}
-                max={99}
-                value={moveCount}
-                onChange={(e) => setMoveCount(Math.max(1, Math.min(99, parseInt(e.target.value) || 1)))}
-                onClick={(e) => e.stopPropagation()}
-                onMouseDown={(e) => e.stopPropagation()}
-                onKeyDown={(e) => e.stopPropagation()}
-                className="w-7 h-5 text-center text-[9px] font-mono font-bold bg-surface-raised border border-border rounded text-ink outline-none focus:border-accent cursor-text [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                title="Pages to move (1-9 keys or type)"
-              />
-              <button
-                onClick={(e) => { e.stopPropagation(); moveBoundary(moveCount) }}
-                onMouseDown={(e) => e.stopPropagation()}
-                className="w-5 h-5 flex items-center justify-center rounded text-ink-muted hover:text-accent hover:bg-accent/10 transition-colors"
-                title={`Move ${moveCount} page${moveCount > 1 ? "s" : ""} → (→)`}
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Merge */}
-          <div className="flex flex-col items-center gap-0.5 w-full">
-            <span className="text-[7px] uppercase tracking-wider text-ink-muted/60 font-semibold">Merge</span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={(e) => { e.stopPropagation(); mergeLeft() }}
-                className="w-6 h-6 flex items-center justify-center rounded text-ink-muted hover:text-accent hover:bg-accent/10 transition-colors"
-                title={`Merge into "${prevLabel}" (keep left · Backspace)`}
-              >
-                <Merge className="w-4 h-4" style={{ transform: "rotate(90deg)" }} />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); mergeRight() }}
-                className="w-6 h-6 flex items-center justify-center rounded text-ink-muted hover:text-accent hover:bg-accent/10 transition-colors"
-                title={`Merge into "${nextLabel}" (keep right · Delete)`}
-              >
-                <Merge className="w-4 h-4" style={{ transform: "rotate(-90deg) scaleX(-1)" }} />
-              </button>
-            </div>
-          </div>
+      {/* Controls group — pinned to top */}
+      <div className="flex flex-col items-center pt-1 pb-0.5 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-0.5">
+          <BoundaryBtn color={prevMeta.color} onClick={mergeLeft} title={`Merge into "${prevLabel}" (keep left · ⇧⌫)`}>
+            <Merge className="w-3 h-3" style={{ transform: "scaleX(-1)" }} />
+          </BoundaryBtn>
+          <BoundaryBtn color={nextMeta.color} onClick={mergeRight} title={`Merge into "${nextLabel}" (keep right · ⇧⌦)`}>
+            <Merge className="w-3 h-3" />
+          </BoundaryBtn>
         </div>
-      ) : (
-        <div className="flex flex-col items-center gap-0.5 py-1">
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: prevMeta.color }} />
-          <GripVertical className="w-3 h-3 text-ink-muted/30" />
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: nextMeta.color }} />
+        <input
+          type="number"
+          min={1}
+          value={pageInput}
+          onChange={(e) => setPageInput(e.target.value)}
+          onBlur={() => {
+            const n = parseInt(pageInput, 10)
+            if (!isNaN(n) && n !== boundaryPage) moveBoundaryToPage(n)
+            setPageInput(String(boundaryPage))
+          }}
+          onKeyDown={(e) => {
+            e.stopPropagation()
+            if (e.key === "Enter") {
+              const n = parseInt(pageInput, 10)
+              if (!isNaN(n) && n !== boundaryPage) moveBoundaryToPage(n)
+              ;(e.target as HTMLInputElement).blur()
+            }
+          }}
+          onClick={(e) => { e.stopPropagation(); (e.target as HTMLInputElement).select() }}
+          className="w-7 h-5 text-center text-[9px] font-mono font-bold bg-transparent text-ink-muted outline-none focus:text-ink cursor-text [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          title={`Split at page ${boundaryPage} — type to jump`}
+        />
+        <div className="flex items-center gap-0.5">
+          <BoundaryBtn color={prevMeta.color} onClick={() => moveBoundary(-1)} title="Move boundary 1 page ←">
+            <ChevronLeft className="w-3 h-3" />
+          </BoundaryBtn>
+          <BoundaryBtn color={nextMeta.color} onClick={() => moveBoundary(1)} title="Move boundary 1 page →">
+            <ChevronRight className="w-3 h-3" />
+          </BoundaryBtn>
         </div>
-      )}
+      </div>
 
-      <div className={`w-[2px] flex-1 transition-colors ${showControls ? "bg-accent" : "bg-accent/40"}`} />
+      {/* Accent line — runs the full remaining height */}
+      <div className={`w-[2px] flex-1 transition-colors ${hovered ? "bg-accent" : "bg-accent/40"}`} />
+
+      {/* Color dots + grip centered on the line */}
+      <span className="w-2 h-2 rounded-full shrink-0 my-0.5" style={{ background: prevMeta.color }} />
+      <GripVertical className={`w-3 h-3 shrink-0 transition-colors ${hovered ? "text-accent/60" : "text-ink-muted/25"}`} />
+      <span className="w-2 h-2 rounded-full shrink-0 my-0.5" style={{ background: nextMeta.color }} />
+
+      <div className={`w-[2px] flex-1 transition-colors ${hovered ? "bg-accent" : "bg-accent/40"}`} />
     </div>
   )
 }

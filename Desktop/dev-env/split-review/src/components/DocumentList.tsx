@@ -199,14 +199,12 @@ export function DocumentList() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-border">
-        <div className="flex items-center justify-between mb-0.5">
-          <h2 className="text-[13px] font-bold text-ink tracking-tight">Documents</h2>
-          <span className="text-[11px] font-mono text-ink-muted">{docs.length} docs</span>
-        </div>
-        <div className="flex items-center gap-3 text-[10px] text-ink-muted">
-          <span>{totalPages} / {state.bundle.totalPages} pages</span>
-          {emptyDocs > 0 && <span className="text-warning font-medium">{emptyDocs} empty</span>}
+      <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
+        <h2 className="text-[13px] font-bold text-ink tracking-tight">Documents</h2>
+        <div className="flex items-center gap-2 text-[10px] font-mono text-ink-muted">
+          <span className="px-1.5 py-0.5 rounded bg-surface-sunken">{docs.length} docs</span>
+          <span className="px-1.5 py-0.5 rounded bg-surface-sunken">{totalPages}/{state.bundle.totalPages} pg</span>
+          {emptyDocs > 0 && <span className="px-1.5 py-0.5 rounded bg-warning/10 text-warning font-semibold">{emptyDocs} empty</span>}
         </div>
       </div>
 

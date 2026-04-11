@@ -204,17 +204,49 @@ function reducer(state: AppState, action: AppAction): AppState {
       const lower = { ...state.bundle.documents[docIdx + 1], pages: [...state.bundle.documents[docIdx + 1].pages] }
 
       if (action.delta > 0) {
-        const count = Math.min(action.delta, lower.pages.length - 1)
+        const count = Math.min(action.delta, lower.pages.length)
         if (count <= 0) return state
         const moved = lower.pages.splice(0, count)
         upper.pages.push(...moved)
       } else {
-        const count = Math.min(-action.delta, upper.pages.length - 1)
+        const count = Math.min(-action.delta, upper.pages.length)
         if (count <= 0) return state
         const moved = upper.pages.splice(upper.pages.length - count, count)
         lower.pages.unshift(...moved)
       }
 
+      const docs = [...state.bundle.documents]
+      let newSelectedDocId = state.selectedDocId
+
+      if (upper.pages.length === 0) {
+        docs.splice(docIdx, 1)
+        if (state.selectedDocId === upper.id) newSelectedDocId = lower.id
+      } else if (lower.pages.length === 0) {
+        docs.splice(docIdx + 1, 1)
+        if (state.selectedDocId === lower.id) newSelectedDocId = upper.id
+      } else {
+        docs[docIdx] = upper
+        docs[docIdx + 1] = lower
+      }
+
+      return {
+        ...state,
+        bundle: { ...state.bundle, documents: docs },
+        selectedDocId: newSelectedDocId,
+        unsavedChanges: true,
+      }
+    }
+
+    case "MOVE_BOUNDARY_TO_PAGE": {
+      const docIdx = state.bundle.documents.findIndex((d) => d.id === action.splitAfterDocId)
+      if (docIdx === -1 || docIdx >= state.bundle.documents.length - 1) return state
+      const upper = { ...state.bundle.documents[docIdx], pages: [...state.bundle.documents[docIdx].pages] }
+      const lower = { ...state.bundle.documents[docIdx + 1], pages: [...state.bundle.documents[docIdx + 1].pages] }
+      const allPages = [...upper.pages, ...lower.pages]
+      const targetIdx = allPages.findIndex((p) => p.originalPageNumber === action.targetOriginalPage)
+      if (targetIdx <= 0 || targetIdx >= allPages.length) return state
+      upper.pages = allPages.slice(0, targetIdx)
+      lower.pages = allPages.slice(targetIdx)
       const docs = [...state.bundle.documents]
       docs[docIdx] = upper
       docs[docIdx + 1] = lower

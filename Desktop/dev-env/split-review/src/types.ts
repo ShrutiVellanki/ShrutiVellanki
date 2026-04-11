@@ -88,6 +88,7 @@ export type AppAction =
   | { type: "CREATE_DOC_FROM_RANGE"; docId: string; startPageId: string; endPageId: string }
   | { type: "REMOVE_SPLIT"; docId: string; direction: "left" | "right" }
   | { type: "MOVE_BOUNDARY"; splitAfterDocId: string; delta: number }
+  | { type: "MOVE_BOUNDARY_TO_PAGE"; splitAfterDocId: string; targetOriginalPage: number }
   | { type: "CREATE_EMPTY_DOC" }
   | { type: "DELETE_DOC"; docId: string }
   | { type: "NAV_DOC"; direction: -1 | 1 }
