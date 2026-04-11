@@ -1,8 +1,8 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from "react"
-import { ZoomIn, ZoomOut, Maximize, ChevronLeft, ChevronRight, Move, FileWarning, Download, Loader2 } from "lucide-react"
+import { ZoomIn, ZoomOut, Maximize, ChevronLeft, ChevronRight, Move, FileWarning } from "lucide-react"
 import { useStore } from "../store"
 import { CLASSIFICATION_META } from "../types"
-import type { Page, Document as DocType } from "../types"
+import type { Page } from "../types"
 
 function PreviewToolbar({
   pages,
@@ -113,36 +113,9 @@ function PreviewToolbar({
   )
 }
 
-async function downloadDocAsPdf(doc: DocType, onProgress: (n: number) => void) {
-  const { jsPDF } = await import("jspdf")
-  const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: [612, 792] })
-
-  for (let i = 0; i < doc.pages.length; i++) {
-    if (i > 0) pdf.addPage([612, 792])
-    onProgress(i + 1)
-    const img = new Image()
-    img.crossOrigin = "anonymous"
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve()
-      img.onerror = () => reject(new Error(`Failed to load page ${i + 1}`))
-      img.src = doc.pages[i].pageImageUrl
-    })
-    const canvas = document.createElement("canvas")
-    canvas.width = 612
-    canvas.height = 792
-    const ctx = canvas.getContext("2d")!
-    ctx.drawImage(img, 0, 0, 612, 792)
-    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, 612, 792)
-  }
-
-  pdf.save(doc.fileName.endsWith(".pdf") ? doc.fileName : `${doc.fileName}.pdf`)
-}
-
 export function PagePreview() {
   const { state, dispatch } = useStore()
   const [previewImgError, setPreviewImgError] = useState(false)
-  const [downloading, setDownloading] = useState(false)
-  const [dlProgress, setDlProgress] = useState(0)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const isPanning = useRef(false)
@@ -201,20 +174,6 @@ export function PagePreview() {
 
   const meta = CLASSIFICATION_META[doc.classification]
 
-  const handleDownload = useCallback(async () => {
-    if (downloading || !doc) return
-    setDownloading(true)
-    setDlProgress(0)
-    try {
-      await downloadDocAsPdf(doc, setDlProgress)
-      dispatch({ type: "TOAST", toast: { message: `Downloaded ${doc.fileName}`, type: "success" } })
-    } catch {
-      dispatch({ type: "TOAST", toast: { message: "Download failed", type: "error" } })
-    } finally {
-      setDownloading(false)
-    }
-  }, [doc, downloading, dispatch])
-
   function jumpTo(index: number) {
     if (!doc) return
     if (index >= 0 && index < doc.pages.length) {
@@ -248,23 +207,7 @@ export function PagePreview() {
           </span>
           <span className="text-ink-secondary font-medium truncate">{meta.label}</span>
         </div>
-        <button
-          onClick={handleDownload}
-          disabled={downloading || doc.pages.length === 0}
-          className="flex items-center gap-2 w-full px-2 py-1 rounded-md text-[11px] font-medium font-mono text-ink hover:bg-surface-overlay border border-border transition-colors disabled:opacity-40 disabled:pointer-events-none truncate"
-        >
-          {downloading ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin text-ink-muted" />
-              <span className="truncate">Rendering {dlProgress}/{doc.pages.length}…</span>
-            </>
-          ) : (
-            <>
-              <Download className="w-3.5 h-3.5 shrink-0 text-ink-muted" />
-              <span className="truncate">{doc.fileName}</span>
-            </>
-          )}
-        </button>
+        <div className="text-[11px] text-ink font-medium font-mono truncate">{doc.fileName}</div>
         {doc.name && doc.name !== "New Document" && (
           <div className="text-[11px] text-ink-secondary truncate">{doc.name}</div>
         )}
