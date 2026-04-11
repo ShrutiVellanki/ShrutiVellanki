@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-ink: #1a1a2e;
+  --color-ink-secondary: #4a4a6a;
+  --color-ink-muted: #8888a8;
+
+  --color-surface: #f8f7fc;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #eeedf5;
+  --color-surface-overlay: rgba(26, 26, 46, 0.06);
+
+  --color-border: #e2e0ee;
+  --color-border-strong: #cccade;
+  --color-border-focus: #7c6ccd;
+
+  --color-accent: #6c5ce7;
+  --color-accent-hover: #5a4bd6;
+  --color-accent-soft: rgba(108, 92, 231, 0.08);
+  --color-accent-muted: rgba(108, 92, 231, 0.15);
+
+  --color-success: #2ecc71;
+  --color-success-soft: rgba(46, 204, 113, 0.1);
+  --color-warning: #f0932b;
+  --color-warning-soft: rgba(240, 147, 43, 0.1);
+  --color-danger: #e74c3c;
+  --color-danger-soft: rgba(231, 76, 60, 0.1);
+
+  --color-tag-wages: #6c5ce7;
+  --color-tag-interest: #0984e3;
+  --color-tag-brokerage: #00b894;
+  --color-tag-business: #e17055;
+  --color-tag-pension: #fdcb6e;
+  --color-tag-charity: #e84393;
+  --color-tag-other: #636e72;
+}
+
+@layer base {
+  html {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hidden {
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out;
+}
