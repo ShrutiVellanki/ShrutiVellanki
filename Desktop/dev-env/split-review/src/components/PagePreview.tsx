@@ -237,23 +237,6 @@ export function PagePreview() {
       <div className="px-4 py-3 border-b border-border space-y-1.5">
         <div className="flex items-center justify-between">
           <h2 className="text-[13px] font-bold text-ink tracking-tight">Preview</h2>
-          <button
-            onClick={handleDownload}
-            disabled={downloading || doc.pages.length === 0}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-accent text-white hover:bg-accent/90 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-          >
-            {downloading ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>{dlProgress}/{doc.pages.length}</span>
-              </>
-            ) : (
-              <>
-                <Download className="w-3.5 h-3.5" />
-                <span>Download</span>
-              </>
-            )}
-          </button>
         </div>
         <div className="flex items-center gap-2 text-[11px]">
           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: meta.color }} />
@@ -265,7 +248,23 @@ export function PagePreview() {
           </span>
           <span className="text-ink-secondary font-medium truncate">{meta.label}</span>
         </div>
-        <div className="text-[11px] text-ink font-medium font-mono truncate">{doc.fileName}</div>
+        <button
+          onClick={handleDownload}
+          disabled={downloading || doc.pages.length === 0}
+          className="flex items-center gap-2 w-full px-2 py-1 rounded-md text-[11px] font-medium font-mono text-ink hover:bg-surface-overlay border border-border transition-colors disabled:opacity-40 disabled:pointer-events-none truncate"
+        >
+          {downloading ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin text-ink-muted" />
+              <span className="truncate">Rendering {dlProgress}/{doc.pages.length}…</span>
+            </>
+          ) : (
+            <>
+              <Download className="w-3.5 h-3.5 shrink-0 text-ink-muted" />
+              <span className="truncate">{doc.fileName}</span>
+            </>
+          )}
+        </button>
         {doc.name && doc.name !== "New Document" && (
           <div className="text-[11px] text-ink-secondary truncate">{doc.name}</div>
         )}
