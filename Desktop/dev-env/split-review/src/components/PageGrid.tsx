@@ -150,9 +150,11 @@ function BoundaryBtn({ color, onClick, title, children }: {
       onClick={(e) => { e.stopPropagation(); onClick() }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className="w-5 h-5 flex items-center justify-center rounded transition-colors text-ink-muted/50"
+      className="w-4 h-4 flex items-center justify-center rounded-full cursor-pointer transition-all"
       style={{
-        color: hover ? color : undefined,
+        color,
+        backgroundColor: hover ? `${color}20` : undefined,
+        transform: hover ? "scale(1.15)" : undefined,
       }}
       title={title}
     >
@@ -277,7 +279,7 @@ function SplitBoundary({ prevDoc, nextDoc }: {
     <div
       ref={rootRef}
       tabIndex={0}
-      className="flex flex-col items-center self-stretch select-none outline-none cursor-ew-resize focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+      className="flex flex-col items-center select-none outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
       style={{ width: 32 }}
       onContextMenu={handleContextMenu}
       onMouseEnter={() => setActive(true)}
@@ -285,18 +287,16 @@ function SplitBoundary({ prevDoc, nextDoc }: {
       onFocus={() => setActive(true)}
       onBlur={() => setActive(false)}
       onKeyDown={handleKeyDown}
-      onMouseDown={handleDragStart}
     >
-      {/* Controls group — pinned to top */}
-      <div className="flex flex-col items-center pt-1 pb-0.5 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
-        <div className="flex items-center gap-0.5">
-          <BoundaryBtn color={prevMeta.color} onClick={mergeLeft} title={`Merge into "${prevLabel}" (keep left · ⇧⌫)`}>
-            <Merge className="w-3 h-3" style={{ transform: "scaleX(-1)" }} />
-          </BoundaryBtn>
-          <BoundaryBtn color={nextMeta.color} onClick={mergeRight} title={`Merge into "${nextLabel}" (keep right · ⇧⌦)`}>
-            <Merge className="w-3 h-3" />
-          </BoundaryBtn>
-        </div>
+      {/* Controls — always reserves space, visible on hover */}
+      <div
+        className={`flex flex-col items-center shrink-0 pb-0.5 px-1 py-1 rounded-lg border transition-colors ${
+          hovered && !dragging
+            ? "bg-white shadow-md border-border/40 visible"
+            : "bg-transparent border-transparent shadow-none invisible"
+        }`}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <input
           type="number"
           min={1}
@@ -316,28 +316,42 @@ function SplitBoundary({ prevDoc, nextDoc }: {
             }
           }}
           onClick={(e) => { e.stopPropagation(); (e.target as HTMLInputElement).select() }}
-          className="w-7 h-5 text-center text-[9px] font-mono font-bold bg-transparent text-ink-muted outline-none focus:text-ink cursor-text [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          tabIndex={hovered && !dragging ? 0 : -1}
+          className="w-8 h-5 text-center text-[9px] font-mono font-bold bg-surface-sunken border border-border rounded text-ink outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 cursor-text [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           title={`Split at page ${boundaryPage} — type to jump`}
         />
-        <div className="flex items-center gap-0.5">
-          <BoundaryBtn color={prevMeta.color} onClick={() => moveBoundary(-1)} title="Move boundary 1 page ←">
-            <ChevronLeft className="w-3 h-3" />
+        <div className="flex items-center">
+          <BoundaryBtn color={prevMeta.color} onClick={mergeLeft} title={`Merge ← keep "${prevLabel}" · ⇧⌫`}>
+            <Merge className="w-2.5 h-2.5" style={{ transform: "rotate(-90deg) scaleX(-1)" }} />
           </BoundaryBtn>
-          <BoundaryBtn color={nextMeta.color} onClick={() => moveBoundary(1)} title="Move boundary 1 page →">
-            <ChevronRight className="w-3 h-3" />
+          <BoundaryBtn color={prevMeta.color} onClick={() => moveBoundary(-1)} title="Nudge boundary ←">
+            <ChevronLeft className="w-2.5 h-2.5" />
+          </BoundaryBtn>
+          <BoundaryBtn color={nextMeta.color} onClick={() => moveBoundary(1)} title="Nudge boundary →">
+            <ChevronRight className="w-2.5 h-2.5" />
+          </BoundaryBtn>
+          <BoundaryBtn color={nextMeta.color} onClick={mergeRight} title={`Merge → keep "${nextLabel}" · ⇧⌦`}>
+            <Merge className="w-2.5 h-2.5" style={{ transform: "rotate(90deg)" }} />
           </BoundaryBtn>
         </div>
       </div>
 
-      {/* Accent line — runs the full remaining height */}
-      <div className={`w-[2px] flex-1 transition-colors ${hovered ? "bg-accent" : "bg-accent/40"}`} />
+      {/* Color dots */}
+      <div className="flex items-center gap-1 shrink-0 py-0.5">
+        <span className="w-2 h-2 rounded-full" style={{ background: prevMeta.color }} />
+        <span className="w-2 h-2 rounded-full" style={{ background: nextMeta.color }} />
+      </div>
 
-      {/* Color dots + grip centered on the line */}
-      <span className="w-2 h-2 rounded-full shrink-0 my-0.5" style={{ background: prevMeta.color }} />
-      <GripVertical className={`w-3 h-3 shrink-0 transition-colors ${hovered ? "text-accent/60" : "text-ink-muted/25"}`} />
-      <span className="w-2 h-2 rounded-full shrink-0 my-0.5" style={{ background: nextMeta.color }} />
-
-      <div className={`w-[2px] flex-1 transition-colors ${hovered ? "bg-accent" : "bg-accent/40"}`} />
+      {/* Accent line — matches thumbnail height (156px), fully draggable, grip centered */}
+      <div
+        className={`flex flex-col items-center shrink-0 cursor-ew-resize transition-colors ${hovered ? "bg-accent/8 rounded" : ""}`}
+        style={{ height: 156 }}
+        onMouseDown={handleDragStart}
+      >
+        <div className={`w-[2px] flex-1 transition-colors ${hovered ? "bg-accent" : "bg-accent/40"}`} />
+        <GripVertical className={`w-3.5 h-3.5 shrink-0 transition-colors ${hovered ? "text-accent" : "text-ink-muted/30"}`} />
+        <div className={`w-[2px] flex-1 transition-colors ${hovered ? "bg-accent" : "bg-accent/40"}`} />
+      </div>
     </div>
   )
 }
@@ -368,8 +382,8 @@ function SplitGap({ doc, beforePage }: {
     <div
       tabIndex={0}
       role="button"
-      className="flex flex-col items-center justify-center self-stretch select-none outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface rounded"
-      style={{ width: active ? 28 : 8 }}
+      className="flex flex-col items-center justify-center select-none outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface rounded"
+      style={{ width: active ? 28 : 8, height: 156 }}
       onMouseEnter={() => setActive(true)}
       onMouseLeave={() => setActive(false)}
       onFocus={() => setActive(true)}
@@ -444,7 +458,7 @@ export function PageGrid() {
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-4 py-3"
       >
-        <div className="flex flex-wrap gap-y-2.5 items-stretch">
+        <div className="flex flex-wrap gap-y-2.5 items-end">
           {flatItems.map((item, i) => {
             if (item.kind === "split") {
               return (

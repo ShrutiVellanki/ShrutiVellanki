@@ -10,35 +10,37 @@ const BUNDLE_MANIFEST: {
   descTemplate: string
   pages: number
 }[] = [
-  // --- Big brokerage / consolidated statements ---
+  // --- Mixed early docs so split boundaries between different types are immediately visible ---
+  { prefix: "W2",        classification: "wages",                   pages: 2,  descTemplate: "W-2 Wage and Tax Statement — Goldman Sachs" },
+  { prefix: "1099-INT",  classification: "schedule_b_interest",     pages: 2,  descTemplate: "1099-INT Interest Income — JP Morgan" },
   { prefix: "1099-COMP", classification: "brokerage",               pages: 62, descTemplate: "Consolidated 1099 — Morgan Stanley" },
+  { prefix: "Charity",   classification: "charitable_contributions", pages: 1,  descTemplate: "Charitable donation receipt — Red Cross" },
+  { prefix: "W2",        classification: "wages",                   pages: 2,  descTemplate: "W-2 Wage and Tax Statement — Citadel LLC" },
+  { prefix: "1099-R",    classification: "pensions_annuities_iras", pages: 2,  descTemplate: "1099-R Distribution — Fidelity 401(k)" },
+  { prefix: "SchedC",    classification: "schedule_c_business",     pages: 14, descTemplate: "Schedule C — Archer Capital LLC" },
+  { prefix: "1099-DIV",  classification: "schedule_b_interest",     pages: 3,  descTemplate: "1099-DIV Dividends — Vanguard" },
+  { prefix: "1098",      classification: "schedule_a_deductions",   pages: 2,  descTemplate: "1098 Mortgage Interest Statement — Chase Home Lending" },
+  { prefix: "W2",        classification: "wages",                   pages: 1,  descTemplate: "W-2 Wage and Tax Statement — Board Advisory Fee" },
   { prefix: "1099-COMP", classification: "brokerage",               pages: 48, descTemplate: "Consolidated 1099 — Charles Schwab" },
+  // --- Remaining brokerage ---
   { prefix: "1099-B",    classification: "brokerage",               pages: 24, descTemplate: "1099-B Proceeds from Broker — Fidelity" },
   { prefix: "1099-B",    classification: "brokerage",               pages: 18, descTemplate: "1099-B Proceeds from Broker — Vanguard" },
   { prefix: "1099-B",    classification: "brokerage",               pages: 12, descTemplate: "1099-B Proceeds from Broker — JP Morgan" },
-  // --- Medium business / deduction docs ---
-  { prefix: "SchedC",    classification: "schedule_c_business",     pages: 14, descTemplate: "Schedule C — Archer Capital LLC" },
+  // --- Remaining business / deduction docs ---
   { prefix: "SchedC",    classification: "schedule_c_business",     pages: 8,  descTemplate: "Schedule C — Lighthouse Ventures" },
   { prefix: "SchedA",    classification: "schedule_a_deductions",   pages: 10, descTemplate: "Schedule A itemized deductions backup" },
   { prefix: "K-1",       classification: "schedule_c_business",     pages: 6,  descTemplate: "Schedule K-1 — Peak Advisory Group LP" },
   { prefix: "K-1",       classification: "schedule_c_business",     pages: 5,  descTemplate: "Schedule K-1 — Riverside Fund II" },
-  // --- Wages ---
-  { prefix: "W2",        classification: "wages",                   pages: 2,  descTemplate: "W-2 Wage and Tax Statement — Goldman Sachs" },
-  { prefix: "W2",        classification: "wages",                   pages: 2,  descTemplate: "W-2 Wage and Tax Statement — Citadel LLC" },
-  { prefix: "W2",        classification: "wages",                   pages: 1,  descTemplate: "W-2 Wage and Tax Statement — Board Advisory Fee" },
-  // --- Interest ---
-  { prefix: "1099-INT",  classification: "schedule_b_interest",     pages: 2,  descTemplate: "1099-INT Interest Income — JP Morgan" },
+  // --- Remaining interest ---
   { prefix: "1099-INT",  classification: "schedule_b_interest",     pages: 1,  descTemplate: "1099-INT Interest Income — Bank of America" },
   { prefix: "1099-INT",  classification: "schedule_b_interest",     pages: 1,  descTemplate: "1099-INT Interest Income — Wells Fargo" },
   { prefix: "1099-INT",  classification: "schedule_b_interest",     pages: 2,  descTemplate: "1099-INT Interest Income — Merrill Lynch" },
   { prefix: "1099-INT",  classification: "schedule_b_interest",     pages: 1,  descTemplate: "1099-INT Interest Income — Goldman Sachs Bank" },
-  // --- Dividends ---
-  { prefix: "1099-DIV",  classification: "schedule_b_interest",     pages: 3,  descTemplate: "1099-DIV Dividends — Vanguard" },
+  // --- Remaining dividends ---
   { prefix: "1099-DIV",  classification: "schedule_b_interest",     pages: 2,  descTemplate: "1099-DIV Dividends — Fidelity" },
   { prefix: "1099-DIV",  classification: "schedule_b_interest",     pages: 2,  descTemplate: "1099-DIV Dividends — Charles Schwab" },
   { prefix: "1099-DIV",  classification: "schedule_b_interest",     pages: 1,  descTemplate: "1099-DIV Dividends — JP Morgan" },
-  // --- Retirement ---
-  { prefix: "1099-R",    classification: "pensions_annuities_iras", pages: 2,  descTemplate: "1099-R Distribution — Fidelity 401(k)" },
+  // --- Remaining retirement ---
   { prefix: "1099-R",    classification: "pensions_annuities_iras", pages: 2,  descTemplate: "1099-R Distribution — Schwab IRA" },
   { prefix: "1099-R",    classification: "pensions_annuities_iras", pages: 1,  descTemplate: "1099-R Distribution — TIAA" },
   { prefix: "5498",      classification: "pensions_annuities_iras", pages: 1,  descTemplate: "IRA Contribution Information — Fidelity" },
@@ -47,12 +49,10 @@ const BUNDLE_MANIFEST: {
   { prefix: "1099-NEC",  classification: "schedule_c_business",     pages: 1,  descTemplate: "1099-NEC Nonemployee Compensation — Consulting Group A" },
   { prefix: "1099-NEC",  classification: "schedule_c_business",     pages: 1,  descTemplate: "1099-NEC Nonemployee Compensation — Board of Directors XYZ" },
   { prefix: "1099-NEC",  classification: "schedule_c_business",     pages: 1,  descTemplate: "1099-NEC Nonemployee Compensation — Summit Partners" },
-  // --- Mortgage ---
-  { prefix: "1098",      classification: "schedule_a_deductions",   pages: 2,  descTemplate: "1098 Mortgage Interest Statement — Chase Home Lending" },
+  // --- Remaining mortgage ---
   { prefix: "1098",      classification: "schedule_a_deductions",   pages: 2,  descTemplate: "1098 Mortgage Interest Statement — Rocket Mortgage" },
   { prefix: "1098-T",    classification: "schedule_a_deductions",   pages: 1,  descTemplate: "1098-T Tuition Statement — Columbia University" },
-  // --- Charitable ---
-  { prefix: "Charity",   classification: "charitable_contributions", pages: 1,  descTemplate: "Charitable donation receipt — Red Cross" },
+  // --- Remaining charitable ---
   { prefix: "Charity",   classification: "charitable_contributions", pages: 1,  descTemplate: "Charitable donation receipt — Doctors Without Borders" },
   { prefix: "Charity",   classification: "charitable_contributions", pages: 1,  descTemplate: "Charitable donation receipt — United Way" },
   { prefix: "Charity",   classification: "charitable_contributions", pages: 1,  descTemplate: "Charitable donation receipt — Habitat for Humanity" },
