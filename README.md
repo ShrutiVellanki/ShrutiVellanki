@@ -1,6 +1,6 @@
 # Shruti Vellanki
 
-Hi, my name is Shruti Vellanki. 
+Hi, my name is Shruti. 
 
 I'm a product-minded software engineer, focused on great UX, platform UI and AI powered features. 
 
