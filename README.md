@@ -10,3 +10,4 @@ I'm a product-minded software engineer, focused on great UX, platform UI and AI 
 - [Linkedin](https://www.linkedin.com/in/shruti-vellanki/)
 - [Email](mailto:shvellanki@gmail.com)
 - [Github](https://github.com/ShrutiVellanki)
+- [X](https://x.com/ShrutiVellanki)
