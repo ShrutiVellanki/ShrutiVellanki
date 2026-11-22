@@ -1,7 +1,7 @@
 <a href="https://www.shrutivellanki.com">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ShrutiVellanki/lavender-portfolio/main/brand/github-banner-dark.png">
-    <img alt="Shruti Vellanki’s banner: pale-yellow circles with icons on a gray background" src="https://raw.githubusercontent.com/ShrutiVellanki/lavender-portfolio/main/brand/github-banner-light.png" width="100%">
+    <img alt="Shruti Vellanki’s banner: pale-yellow circles on a gray background" src="https://raw.githubusercontent.com/ShrutiVellanki/lavender-portfolio/main/brand/github-banner-light.png" width="100%">
   </picture>
 </a>
 
